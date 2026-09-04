@@ -239,3 +239,21 @@ This is worth recording because it looked like an obvious "Devanagari combining 
 - How much does the hin/eng gap change under an Indic-aware tokenizer (H7/H8)? Are H1–H3 artifacts responsible for overstating or understating the tokenizer-specific component?
 - Can H6 be quantified: does fertility_ratio × (HIN chars/word) / (ENG chars/word) recover the tok/char ratio? (Phase 3 H5 data shows chars/word: ENG = 448/79 = 5.67 cp/word, HIN = 290/62 = 4.68 cp/word; predicted tok/char ratio = 5.89 × 4.68/5.67 = 4.86 — does not match the reported 6.99×; needs investigation.)
 - Does H9 (worse/better label) warrant a cost model, or just a label change?
+
+# Phase 4 — Metric & Denominator Audit
+Date: 2026-09-04
+
+Question: What is the correct denominator for cross-script tokenizer comparison, and does the tok/char metric provide independent confirmation of the tok/word metric?
+
+## What we did
+- Produced `partA/experiments/04_denominator_audit.md`.
+- Evaluated 5 candidate denominators (whitespace words, code points, grapheme clusters, UTF-8 bytes, parallel sentences).
+- Argued theoretically based on Hindi orthography (conjuncts, matras, postpositions) that "whitespace words" is structurally biased against Hindi compared to English, making "fertility" an apples-to-oranges comparison.
+- Showed via algebraic derivation and a synthetic counter-example that `tok/char` and `tok/word` are not statistically independent. They share the same numerator (tokens) and differ only by the `chars/word` ratio. Agreement between them simply means the language's average word length didn't wildly distort the underlying token ratio; it does not "confirm" the measurement's robustness.
+
+## Key results
+- **Tokens per word is a flawed unit of cross-script meaning:** We formulated the hypothesis that evaluating tokenizers using "whitespace words" as the denominator inherently penalizes agglutinative and morphologically dense languages like Hindi. This will be empirically tested in Phase 6.
+- **Metric dependency:** `REPORT_v0.md`'s claim that tok/char "confirms" the per-word finding is a methodological error. The two metrics are algebraically locked together by the average word length.
+
+## Open questions carried to Phase 5
+- We've established that the Phase 1 script has implementation bugs, preprocessing asymmetries, and severe conceptual metric problems. In Phase 5, we need to build the clean baseline for Phase 6.
