@@ -1,7 +1,7 @@
 # Executive Memo: Multilingual Tokenizer Audit & Serving Cost Recommendation
 
 **To:** AI Infrastructure & Platform Leadership  
-**From:** Antigravity AI Evaluation Team  
+**From:** Sai Krishnaa  
 **Date:** 2026-09-04  
 **Subject:** Correction of Indic Tokenization Penalty & Model Routing Strategy  
 

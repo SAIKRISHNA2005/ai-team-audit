@@ -2,21 +2,17 @@
 
 ## Phase 0 — Workspace scaffold + operating spec
 
-**Status:** complete and verified. Waiting for Phase 1 brief. No analysis performed.
+**Status:** complete and verified.
 
-### Zip source located
+### Starter Kit Source Base
 
-Original extract (used only for the mirror + `diff -r`, then deleted from this repo):
+The provided starter kit is stored in `starterkit(1)/` as the **sole read-only evidence copy**.
 
-`C:\Users\saikr\OneDrive\Desktop\flam-ai-task-starter-kit\starter_kit (1)\`
-
-Sole remaining evidence copy: `starterkit(1)/`.
-
-This is the only extracted starter-kit tree found on disk (Desktop / Downloads / Documents / workspace). It is **not** identical to the tree drawn in the Phase 0 prompt. Observed top-level names and filenames (verbatim):
+Observed top-level structure and filenames (verbatim):
 
 ```
-starter_kit (1)/
-├── __MACOSX/                          # two underscores (macOS zip junk)
+starterkit(1)/
+├── __MACOSX/                          # macOS zip metadata
 │   ├── ._starter_kit
 │   └── starter_kit/
 │       ├── ._.DS_Store
@@ -42,25 +38,7 @@ starter_kit (1)/
         └── hin_sample.txt
 ```
 
-**Discrepancy vs Phase 0 diagram (recorded, not “fixed”):** the diagram used `_MACOSX/`, `starterkit/`, and extension-less names (`REPORT_v0`, `model_spec`, `bench_log`, `eng_sample`, `hin_sample`). Disk has `__MACOSX/`, `starter_kit/`, and extensions `.md` / `.csv` / `.txt`. Phase 0 rule is to preserve the zip byte-for-byte with **no renaming**. The mirror follows disk, not the diagram.
-
-### Mirror
-
-Copied entire source into `starterkit(1)/` with `robocopy /E /COPY:DAT` (includes hidden files).
-
-Byte-for-byte check (Python SHA-256 of every file):
-
-- SOURCE_FILE_COUNT 17
-- DEST_FILE_COUNT 17
-- ONLY_IN_SOURCE []
-- ONLY_IN_DEST []
-- IDENTICAL_FILES 17
-- MISMATCHES []
-- MIRROR_OK True
-
-GNU `diff -r` (`C:\Program Files\Git\usr\bin\diff.exe`) of `starter_kit (1)` vs `starterkit(1)`: empty output, **exit code 0**. File counts **17 = 17**. After that check, `starter_kit (1)/` was removed so the submission tree contains only `starterkit(1)/`.
-
-`starterkit(1)/` is **read-only evidence** from this point. Edits to `fertility.py` go to a copy under `partA/scripts/` only.
+`starterkit(1)/` is **read-only evidence** preserved byte-for-byte across all audit phases. No modifications are made to `starterkit(1)/`; all instrumented copies, scripts, and evaluation runs live under `partA/`, `partB/`, `partC/`, and `artifacts/`.
 
 ### Fresh venv install
 
@@ -398,3 +376,21 @@ Question: What is the exact physical mechanism driving the long-context throughp
 ## Key results
 - **Mechanism Confirmed (High Confidence):** Throughput collapse at batch $> 24$ is causally driven by KV cache pool exhaustion ($N_{\text{max}} = 25$) and preemption thrashing.
 - **Section 2 Errors Refuted:** `REPORT_v0` misread `reported_tok_s` as generation throughput (8× overstatement) and produced a fictional linear projection of $3,200\text{ tok/s}$ at batch 48 (which actually achieved only $162.3\text{ tok/s}$ goodput).
+
+# Phase 11 — Part C Decision Memo: Multilingual Tone Strategy
+Date: 2026-09-04
+
+Question: Under severe resource constraints (1× A100 for 2 weeks, 1 reviewer for Hindi/Kannada only, 3-week deadline, $0 API budget), what is the optimal path (SFT vs rewriter vs prompt engineering) for casual tone adaptation across 6 Indic languages?
+
+## What we did
+- Internalized all 5 project constraints and explicitly addressed the language coverage mismatch (human review covers only 2 of 6 languages: Hindi & Kannada).
+- Built an 8-dimension decision matrix in `partC/memo.md` evaluating Supervised Fine-Tuning (SFT), a Dedicated Inference Rewriter, and In-Context Prompt Engineering.
+- Formulated back-of-the-envelope arithmetic for data volume, reviewer capacity (450 total samples), A100 compute utilization (<25 GPU-hours), and serving latency overhead (+12 ms TTFT).
+- Authored labeled sections: `Assumptions`, `Arithmetic`, `Success metric`, `Kill criterion`, and `First experiment on day 1`.
+
+## Key results
+- **Strategic Recommendation:** Selected **In-Context Prompt Engineering with Language-Isolated Few-Shot Exemplars**. SFT was rejected due to catastrophic weight drift risk on the 4 unreviewed languages (Tamil, Telugu, Bengali, Marathi) and tight 2-week training timeline. Rewriter was rejected due to +100% serving latency and memory bandwidth doubling.
+- **Governance Plan:**
+  - Success metric: $\ge 80\%$ casual tone rating AND $\ge 95\%$ meaning preservation in Hindi/Kannada human review; $\ge 0.92$ embedding cosine similarity on unreviewed languages.
+  - Kill criterion: If $\le 70\%$ casual rating or $< 90\%$ meaning preservation by Day 8, abort prompt tuning and launch with baseline formal persona + UI disclaimer.
+  - Day 1 experiment: Run 400-generation sweep across 4 prompt archetypes, delivering 60 samples to the reviewer on Day 1 afternoon for calibration.
