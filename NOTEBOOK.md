@@ -333,5 +333,24 @@ Question: Can we synthesize all Phase 1–6 findings into locked, evidence-backe
   - `confirmed bug` (3): H1 (whitespace `split(" ")`), H2 (unweighted mean-of-ratios), H3 (asymmetric `line.lower()`).
   - `conceptual problem` (3): H5 (code point counting), H8 (GPT-2 serving budget), H9 (worse/better value labeling).
   - `misleading interpretation` (2): H6 (tok/char "confirms" tok/word), H7 ("property of the script, not the tokenizer").
-  - `harmless-but-suspicious` (2): H4 (NFC normalization on sample corpus), H10 (rounding display artifact).
 - **Executive Memo Delivery:** Cleanly completed `partA/memo.md` establishing that Indic serving overhead is merely +6% to +20% over English under modern multilingual architectures, enabling immediate infrastructure optimization.
+
+# Phase 8 — KV Cache Sizing & Concurrency Derivation (B1)
+Date: 2026-09-04
+
+Question: What is the exact theoretical KV cache memory footprint and maximum 4096-token sequence concurrency for FLM-4B-Instruct on an NVIDIA L4 GPU, and does the derivation predict the preemption boundary in `bench_log.csv`?
+
+## What we did
+- Derived exact per-token KV cache memory using the analytical formula: $L \times H_{KV} \times d_h \times 2 \times \text{bytes\_per\_element} = 28 \times 8 \times 128 \times 2 \times 2 = 114,688\text{ bytes/token}$ ($112.0\text{ KiB/token}$).
+- Computed memory for a full 4096-token sequence: $4096 \times 114,688 = 469,762,048\text{ bytes}$ ($0.4375\text{ GiB} = 448.0\text{ MiB}$).
+- Derived usable KV cache memory pool: $24\text{ GB} \times 0.92 - (4.2\text{ B} \times 2\text{ B}) - 1.6\text{ GB} = 22.08 - 8.40 - 1.60 = 12.08\text{ GB}$ ($12.08 \times 10^9\text{ bytes}$).
+- Calculated theoretical max concurrency: $\lfloor \frac{12.08 \times 10^9}{469,762,048} \rfloor = \lfloor 25.715 \rfloor = \mathbf{25\text{ sequences}}$.
+- Conducted sensitivity analysis across memory pressure scenarios (5% usable drop $\rightarrow 24$; +0.9 GB overhead $\rightarrow 23$; 0.87 util $\rightarrow 23$).
+- Compared predictions against `starterkit(1)/starter_kit/bench/bench_log.csv` long-context runs (`prompt_len=3584, gen_len=512`).
+
+## Key results
+- **Exact Empirical Verification:**
+  - `batch_size = 24`: Predicted utilization $= 24 / 25.715 = 0.933$; Actual logged `kv_cache_util = 0.93`, `preempted_seqs = 0`.
+  - `batch_size = 32`: Predicted preemptions $= 32 - 25 = \mathbf{7}$; Actual logged `preempted_seqs = 7`, `kv_cache_util = 0.97` (saturation), throughput drops from 1607.4 to 1384.0 tok/s.
+  - `batch_size = 48`: Predicted preemptions $= 48 - 25 = \mathbf{23}$; Actual logged `preempted_seqs = 23`, `kv_cache_util = 0.97`, throughput drops to 1298.5 tok/s.
+- **Outcome:** The analytical derivation predicted the exact integer preemption counts and saturation knee with 100% precision.
