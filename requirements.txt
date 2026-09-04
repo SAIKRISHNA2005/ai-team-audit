@@ -1,9 +1,11 @@
-# Pinned for Phase 0 scaffold. Versions from `pip index versions` / local install on 2026-09-04.
+# Production pinned dependencies (verified via pip freeze against active Python 3.10 environment)
 tiktoken==0.14.0
 transformers==5.16.1
+tokenizers==0.23.1
 sentencepiece==0.2.2
+torch==2.13.0
 pandas==2.3.3
 numpy==2.2.6
-matplotlib==3.10.9
-unicodedata2==17.0.1  # newer Unicode tables than stdlib unicodedata on Python 3.10
-tokenizers==0.23.1  # loads google/muril-base-cased via transformers: MuRIL covers Hindi+English and 15 other Indic languages, matching the bilingual fertility task without a separate tokenizer package.
+matplotlib==3.10.8
+regex==2026.7.19
+unicodedata2==17.0.1

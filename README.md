@@ -37,13 +37,13 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Phase 1: Baseline Reproduction
+### 2. Baseline Reproduction
 Reproduce the original flawed numbers reported in `REPORT_v0.md`:
 ```bash
-python starterkit(1)/starter_kit/tokenization/fertility.py
+python "starterkit(1)/starter_kit/fertility.py" --corpus eng="starterkit(1)/starter_kit/corpus_sample/eng_sample.txt" --corpus hin="starterkit(1)/starter_kit/corpus_sample/hin_sample.txt" --tokenizer gpt2
 ```
 
-### 3. Phase 3: Bug Isolation Controlled Experiments
+### 3. Bug Isolation Controlled Experiments
 Isolate potential code-level bugs in whitespace handling, aggregation, casing, Unicode normalization, and character counting:
 ```bash
 python partA/scripts/exp_h1_whitespace.py
@@ -53,26 +53,26 @@ python partA/scripts/exp_h4_nfc.py
 python partA/scripts/exp_h5_charcount.py
 ```
 
-### 4. Phase 5: Build & Verify 6-Language FLORES-200 Corpus
+### 4. Build & Verify 6-Language FLORES-200 Corpus
 Construct the 1,012-sentence parallel evaluation dataset across English, Hindi, Tamil, Kannada, Malayalam, and Telugu:
 ```bash
 python partA/scripts/build_corpus.py
 python partA/scripts/_verify_corpus.py
 ```
 
-### 5. Phase 6: Run Corrected Multilingual Tokenization Matrix
+### 5. Run Corrected Multilingual Tokenization Matrix
 Execute the corrected evaluation across both GPT-2 and MuRIL tokenizers, generating summary tables and sentence-level distributions:
 ```bash
 python partA/scripts/corrected_analysis.py
 ```
 
-### 6. Phase 9 & 10: Process Benchmark Log & Audit Goodput
+### 6. Process Benchmark Log & Audit Goodput
 Parse the raw serving benchmark logs, derive true generation goodput, audit prefill inflation, and confirm the KV cache preemption knee:
 ```bash
 python partB/scripts/load_bench_log.py
 ```
 
-### 7. Phase 14: Verify Calculations Live
+### 7. Verify Calculations Live
 Re-derive KV cache sizing and dual goodput numbers live from Python one-liners:
 ```bash
 # 1. KV cache memory per token (114,688 bytes/tok = 112 KiB/tok)
