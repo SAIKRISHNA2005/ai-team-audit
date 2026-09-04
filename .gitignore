@@ -1,0 +1,14 @@
+# Python virtual environments & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+
+
+# Live Q&A and interview defense prep cards (kept local)
+**/defense_cards.md
+partA/results/defense_cards.md
+partB/results/defense_cards.md
