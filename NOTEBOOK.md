@@ -377,3 +377,24 @@ Question: What are the exact token counting semantics of `reported_tok_s` in `be
   - At `prompt_len=512, gen_len=256`: Prompt is $66.7\%$ of workload; `reported_tok_s` is exactly **$3.00\times$ higher** than generation goodput (e.g. at batch 64: reported = $2,267.3\text{ tok/s}$, goodput = $755.7\text{ tok/s}$).
   - At `prompt_len=3584, gen_len=512`: Prompt is $87.5\%$ of workload; `reported_tok_s` is exactly **$8.00\times$ higher** than generation goodput (e.g. at batch 24: reported = $1,607.4\text{ tok/s}$, goodput = $200.9\text{ tok/s}$).
 - **Core Finding for Section 2 Audit:** `REPORT_v0` conflated total throughput with generation rate, masking a $73.4\%$ generation throughput collapse ($755.7 \rightarrow 200.9\text{ tok/s}$) behind high prefill token counts.
+
+# Phase 10 — Long-Context Anomaly & Section 2 Correction (B2, B3, B4)
+Date: 2026-09-04
+
+Question: What is the exact physical mechanism driving the long-context throughput collapse beyond batch 24, how should REPORT_v0 Section 2 be corrected using dual independent derivations, and what production metric confirms the mechanism?
+
+## What we did
+- Conducted B2 anomaly analysis on the `prompt_len=3584, gen_len=512` sweep in `partB/calculations.md` Section 8, tabulating metrics across batches 4 to 48.
+- Pinpointed the scaling break between batch 24 (peak goodput $200.9\text{ tok/s}$, 0 preemptions, $0.93$ util) and batch 32 (goodput drops to $173.0\text{ tok/s}$, 7 preemptions, $0.97$ util).
+- Evaluated and ruled out 4 alternative explanations (compute saturation, memory bandwidth limits, scheduler CPU overhead, measurement artifact) using empirical signatures in the log.
+- Formulated deployment recommendation: cap concurrency at `max_num_seqs = 24` to recover $+23.8\%$ generation goodput vs batch 48 while reducing p95 latency by $34.3\%$.
+- Derived honest batch-24 goodput in Section 9 using two independent mathematical derivations:
+  1. Direct Token/Time Arithmetic: $\frac{24 \times 512}{61.16\text{ s}} = 200.916\text{ tok/s}$.
+  2. Ratio-Adjusted Reported Throughput: $1607.4 \times \frac{512}{4096} = 200.925\text{ tok/s}$.
+  (Agreement within $0.0045\%$).
+- Wrote report-ready replacement prose for `REPORT_v0` Section 2.
+- Specified the production metric `vllm:num_preemptions_total` and expected operational thresholds in Section 10 (B4).
+
+## Key results
+- **Mechanism Confirmed (High Confidence):** Throughput collapse at batch $> 24$ is causally driven by KV cache pool exhaustion ($N_{\text{max}} = 25$) and preemption thrashing.
+- **Section 2 Errors Refuted:** `REPORT_v0` misread `reported_tok_s` as generation throughput (8× overstatement) and produced a fictional linear projection of $3,200\text{ tok/s}$ at batch 48 (which actually achieved only $162.3\text{ tok/s}$ goodput).
