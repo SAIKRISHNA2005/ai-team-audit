@@ -1,0 +1,22 @@
+=== Phase 1 baseline reproduction ===
+cwd: C:\Users\saikr\OneDrive\Desktop\flam-ai-task-starter-kit\starterkit(1)\starter_kit
+python: C:\Users\saikr\AppData\Local\Temp\flam-phase0-venv\Scripts\python.exe
+exact_command: "C:\Users\saikr\AppData\Local\Temp\flam-phase0-venv\Scripts\python.exe" fertility.py --corpus eng=corpus_sample/eng_sample.txt --corpus hin=corpus_sample/hin_sample.txt --tokenizer gpt2
+(equivalent to REPORT_v0 invocation: python fertility.py --corpus eng=corpus_sample/eng_sample.txt --corpus hin=corpus_sample/hin_sample.txt --tokenizer gpt2)
+started_utc: 2026-09-04T11:27:39.0785012Z
+
+=== stdout+stderr ===
+tokenizer: gpt2
+lang      fertility (tok/word)    tok/char
+------------------------------------------
+eng                       1.27       0.226
+hin                       7.45       1.579
+
+hin is 5.89x the fertility of eng (worse tokenization)
+
+=== stderr ===
+
+=== process ===
+exit_code: 0
+ended_utc: 2026-09-04T11:27:49.2705238Z
+stderr_empty: True

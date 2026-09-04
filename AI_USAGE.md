@@ -13,3 +13,8 @@ Tool: Cursor (agent collaborator). Role: senior research-engineer pair for “Th
 - Re-verified with GNU `diff -r` (exit 0, 17=17 files), installed `requirements.txt` in a fresh `%TEMP%` venv (`pip install` 0, `pip check` clean), then deleted the duplicate `starter_kit (1)/` folder.
 
 No analysis of fertility, corpus, or bench logs in this phase. No git commands.
+
+## Phase 1
+
+- Inventoried `fertility.py` and `REPORT_v0.md`; reproduced gpt2 baseline; inventoried bench columns.
+- No fixes, no bug verdicts. No git commands.

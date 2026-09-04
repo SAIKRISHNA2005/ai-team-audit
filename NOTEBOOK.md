@@ -84,3 +84,51 @@ Venv lived only under `%TEMP%`; not added to the repo.
 ### Environment
 
 Captured by running Python/`pip freeze`/platform APIs into `artifacts/raw/env.txt` (not guessed).
+
+# Phase 1 — Evidence inventory & baseline reproduction
+Date: 2026-09-04
+
+Question: Can we reproduce exactly what REPORT_v0 reported, and can we inventory every claim and every bench column without judging bugs yet?
+
+What we did:
+- Read `starterkit(1)/starter_kit/fertility.py` line by line; wrote `partA/experiments/00_script_inventory.md` (reads, preprocess order, tokenization, two metrics, aggregation, prints).
+- Read `starterkit(1)/starter_kit/REPORT_v0.md`; wrote `partA/experiments/01_claims_table.md` covering every factual claim, number, causal statement, and recommendation (including “no further measurement needed” and “property of the script, not the tokenizer”).
+- Ran unmodified `fertility.py` with gpt2 and both sample corpora, same flags as the report.
+- Compared printed numbers to the report table to the decimals shown.
+- Inventoried `bench/model_spec.md` and `bench/bench_log.csv` in `partA/experiments/02_bench_inventory.md`.
+- Did not propose fixes or label bugs.
+
+Command(s) run:
+- cwd: `starterkit(1)/starter_kit`
+- `C:\Users\saikr\AppData\Local\Temp\flam-phase0-venv\Scripts\python.exe fertility.py --corpus eng=corpus_sample/eng_sample.txt --corpus hin=corpus_sample/hin_sample.txt --tokenizer gpt2`
+- Ratio check on printed decimals: `python -c "print(1.579/0.226); print(7.45/1.27)"`
+
+Result (raw, or pointer to artifacts/raw/... file):
+- Full command + stdout/stderr/exit: `artifacts/raw/phase1_baseline_run.txt`
+- stdout (exit 0, stderr empty):
+
+```
+tokenizer: gpt2
+lang      fertility (tok/word)    tok/char
+------------------------------------------
+eng                       1.27       0.226
+hin                       7.45       1.579
+
+hin is 5.89x the fertility of eng (worse tokenization)
+```
+
+- Report table vs stdout: eng 1.27 / 0.226 and hin 7.45 / 1.579 — exact match. Ratio line 5.89× — exact match to stdout.
+- Printed-decimal divisions: 1.579/0.226 = 6.986725663716814; 7.45/1.27 = 5.866141732283465.
+- Bench file reads (not a GPU rerun): batch 16 long `reported_tok_s=1311.4` (report 1311); batch 16 short `883.2` (report 883); long-prompt max `1607.4`; global max `2267.3`; batch 48 long `1298.5`.
+
+Interpretation:
+- We **can** reproduce the fertility table and the 5.89× line from the unmodified script. That is transcription fidelity, not a verdict on metric quality or serving cost.
+- Causal claims (script vs tokenizer, 6× cost, metrics “agree” hence robust, GPU utilization, linear batch scaling to 3200 tok/s) were **not** tested. Not yet experimentally verified.
+- `reported_tok_s` and several other bench columns are incompletely defined in `model_spec.md`.
+
+Open questions carried to Phase 2:
+- How much of the Hindi vs English gap is tokenizer vs measurement choices in `fertility.py` (lowercase, `split(" ")`, mean-of-ratios, NFC)?
+- Do the two metrics “agree,” given 5.89× vs ~7.0×?
+- What is the exact definition of `reported_tok_s`, `batch_size`, `wall_clock_s`, and `kv_cache_util`?
+- Why does REPORT_v0’s ~3200 tok/s at batch 48 disagree with the existing CSV row 1298.5? (question only; no verdict this phase)
+
