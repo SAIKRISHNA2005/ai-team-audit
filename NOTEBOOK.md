@@ -313,3 +313,25 @@ Question: When recomputed with corpus-level aggregation across multiple denomina
   - **Byte-Density Inversion:** Under MuRIL, Indic languages are over 2× *more efficient per byte* than English (0.069–0.095 tok/byte vs 0.209 for English) because each Indic WordPiece subword compresses multiple 3-byte characters into a single token ID.
   - **Telugu Minor Outlier:** Telugu has slightly higher token counts (32.8 tok/sent) than Tamil (28.9) and Kannada (29.1), reflecting slight subword sparsity in MuRIL's pretraining corpus.
 - **Serving Recommendation:** Models must be routed and priced based on **Tokens per Semantic Task/Sentence**, not `tok/word` or `tok/char`.
+
+# Phase 7 — Part A Synthesis & Recommendation Memo (A2 Verdicts + A4)
+Date: 2026-09-04
+
+Question: Can we synthesize all Phase 1–6 findings into locked, evidence-backed verdicts for all 10 hypotheses and author a concise, actionable executive recommendation memo?
+
+## What we did
+- Generated `partA/results/final_verdicts.md` locking in final verdicts for all 10 hypotheses from the Phase 2 registry (H1 through H10) with exact numerical justifications and measured distortion magnitudes.
+- Authored `partA/memo.md` (≤1 page) providing:
+  - Corrected headline serving numbers across 6 languages (FLORES-200 devtest).
+  - Clear model routing and capacity recommendations.
+  - The primary operational caveat (translationese / formal domain bias).
+  - Production monitoring metric ($\text{p90}[\text{tok/byte}]$ with $\ge 0.35$ alert threshold).
+- Verified that every numeric claim in `partA/memo.md` and `partA/results/final_verdicts.md` traces directly to validated output files in `partA/results/` and `partA/experiments/`.
+
+## Key results
+- **Verdicts Summary:**
+  - `confirmed bug` (3): H1 (whitespace `split(" ")`), H2 (unweighted mean-of-ratios), H3 (asymmetric `line.lower()`).
+  - `conceptual problem` (3): H5 (code point counting), H8 (GPT-2 serving budget), H9 (worse/better value labeling).
+  - `misleading interpretation` (2): H6 (tok/char "confirms" tok/word), H7 ("property of the script, not the tokenizer").
+  - `harmless-but-suspicious` (2): H4 (NFC normalization on sample corpus), H10 (rounding display artifact).
+- **Executive Memo Delivery:** Cleanly completed `partA/memo.md` establishing that Indic serving overhead is merely +6% to +20% over English under modern multilingual architectures, enabling immediate infrastructure optimization.
