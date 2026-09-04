@@ -1,0 +1,62 @@
+﻿======================================================================
+PART A  Synthetic: NFC vs NFD with combining characters
+======================================================================
+
+Case                                 len_orig  len_NFC  len_NFD  tok_NFC  tok_NFD  changed
+--------------------------------------------------------------------------------------------
+Latin e-acute NFD                           2        1        2        1        3      YES
+Latin e-acute NFC                           1        1        2        1        3      YES
+Devanagari αñí+nukta (NFD)                    2        2        2        4        4       no
+Devanagari αñíαñ╝  (NFC)                        2        2        2        4        4       no
+Devanagari αñò+αñ╛  (NFC)                       2        2        2        3        3       no
+Devanagari r+hal+ya                         3        3        3        6        6       no
+HIN sentence NFC                           24       24       24       37       37       no
+HIN sentence NFD                           24       24       24       37       37       no
+
+--- Nukta (αñí+Γùîαñ╝) NFC vs NFD detail ---
+  da_nfd: codepoints=['0x921', '0x93c']  len=2
+  da_nfc: codepoints=['0x921', '0x93c']  len=2
+  da_nfd same as da_nfc? True
+  da_nfd NFC check: True
+  da_nfc NFC check: True
+
+--- Latin e-acute NFD vs NFC detail ---
+  e_nfd: codepoints=['0x65', '0x301']  len=2
+  e_nfc: codepoints=['0xe9']  len=1
+  e_nfd tokens: [68, 136, 223]
+  e_nfc tokens: [2634]
+
+======================================================================
+PART B  Real corpus: NFC status checks and metric comparison
+======================================================================
+
+--- ENG ---
+  Lines changed under NFC: 0/10
+  Lines changed under NFD: 0/10
+  Lines with len() change after NFC: 0/10
+  => All ENG lines are already NFC ΓÇö normalize() is a no-op here.
+
+--- HIN ---
+  Lines changed under NFC: 0/10
+  Lines changed under NFD: 0/10
+  Lines with len() change after NFC: 0/10
+  => All HIN lines are already NFC ΓÇö normalize() is a no-op here.
+
+--- Corpus metrics: NFC vs NFD vs no-normalize ---
+
+  ENG:
+       normalize    fertility   tok/char
+    ------------------------------------
+      none (raw)     1.265206   0.225636
+             NFC     1.265206   0.225636
+             NFD     1.265206   0.225636
+
+  HIN:
+       normalize    fertility   tok/char
+    ------------------------------------
+      none (raw)     7.448452   1.579108
+             NFC     7.448452   1.579108
+             NFD     7.448452   1.579108
+
+======================================================================
+END OF EXP_H4

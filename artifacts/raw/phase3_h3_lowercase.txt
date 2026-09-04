@@ -1,0 +1,84 @@
+﻿======================================================================
+PART A  Synthetic: .lower() impact on token counts
+======================================================================
+
+Case                                 tokens_orig  tokens_lower   delta   %change
+--------------------------------------------------------------------------------
+ENG all upper                                  8             6      -2   -25.00% <-- CHANGED
+ENG mixed case                                 6             6       0     0.00%
+ENG proper noun                                1             2       1   100.00% <-- CHANGED
+ENG acronym                                    2             2       0     0.00%
+ENG normal lower                               2             2       0     0.00%
+ENG sentence-start cap                         6             6       0     0.00%
+ENG all lower                                  6             6       0     0.00%
+HIN devanagari                                37            37       0     0.00%
+HIN with digit                                18            18       0     0.00%
+HIN with latin word                            7             8       1    14.29% <-- CHANGED
+
+--- Token-by-token breakdown for key cases ---
+  'NASA' -> [29998]  (1 tokens)
+  'nasa' -> [77, 15462]  (2 tokens)
+
+  'ISRO' -> [1797, 13252]  (2 tokens)
+  'isro' -> [271, 305]  (2 tokens)
+
+  'Bengaluru' -> [33, 1516, 282, 14717]  (4 tokens)
+  'bengaluru' -> [65, 1516, 282, 14717]  (4 tokens)
+
+
+======================================================================
+PART B  Real-corpus: with vs without .lower()
+======================================================================
+
+  English corpus: 10 lines
+  Hindi corpus:   10 lines
+
+--- Per-line token delta (with lower vs without lower) ---
+
+  ENG:
+   line  tok_lower  tok_orig   delta
+  -----------------------------------
+      1         12        12       0
+      2          9         8       1 <--
+      3         13        13       0
+      4          8         8       0
+      5          7         7       0
+      6         11        10       1 <--
+      7         10        10       0
+      8          9         9       0
+      9          7         7       0
+     10         13        12       1 <--
+
+  HIN:
+   line  tok_lower  tok_orig   delta
+  -----------------------------------
+      1         47        47       0
+      2         61        61       0
+      3         47        47       0
+      4         51        51       0
+      5         34        34       0
+      6         40        40       0
+      7         59        59       0
+      8         35        35       0
+      9         40        40       0
+     10         45        45       0
+  [HIN] No lines changed token count under .lower()
+
+--- Corpus-level fertility comparison ---
+
+Metric                                with .lower()  without .lower()   delta %
+------------------------------------------------------------------------------
+ENG fertility                              1.265206          1.229329   -2.836%
+HIN fertility                              7.448452          7.448452    0.000%
+HIN/ENG ratio                              5.887148          6.058958    2.918%
+ENG total tokens                                 99                96   -3.030%
+HIN total tokens                                459               459    0.000%
+ENG tok/char                               0.225636          0.219562   -2.692%
+HIN tok/char                               1.579108          1.579108    0.000%
+
+--- 2 d.p. display ---
+  with .lower():    ENG 1.27  HIN 7.45  ratio 5.89x
+  without .lower(): ENG 1.23  HIN 7.45  ratio 6.06x
+
+======================================================================
+END OF EXP_H3

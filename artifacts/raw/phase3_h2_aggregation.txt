@@ -1,0 +1,85 @@
+﻿======================================================================
+PART A  Synthetic: mean-of-ratios vs ratio-of-totals divergence
+======================================================================
+
+Scenario 1: One short line (high fertility) + one long line (low fertility)
+  1-word line: 1 words, 4 tokens ΓåÆ ratio_i = 4.0000
+  100-word line: 100 words, 110 tokens ΓåÆ ratio_i = 1.1000
+
+  mean-of-ratios          = 2.5500
+  ratio-of-totals         = 1.1287  (114/101)
+  delta                   = -1.4213
+  % change (totals / mean) = -55.74%
+
+Scenario 2: Extreme case ΓÇö one 1-word line at very high fertility
+  1-word line: 1 words, 10 tokens ΓåÆ ratio_i = 10.0000
+  1000-word line: 1000 words, 1005 tokens ΓåÆ ratio_i = 1.0050
+
+  mean-of-ratios          = 5.5025
+  ratio-of-totals         = 1.0140  (1015/1001)
+  delta                   = -4.4885
+  % change (totals / mean) = -81.57%
+
+Scenario 3: Three identical lines (should give zero delta)
+  All lines: 10 words, 15 tokens ΓåÆ ratio = 1.5000
+  mean-of-ratios   = 1.500000
+  ratio-of-totals  = 1.500000
+  delta = 0.00000000  (should be ~0)
+
+======================================================================
+PART B  Real-corpus: mean-of-ratios (fertility.py) vs ratio-of-totals
+======================================================================
+
+  English corpus: 10 lines
+  Hindi corpus:   10 lines
+
+--- Per-line token/word breakdown (to show line-length variation) ---
+
+  ENG:
+   line   words   tokens   ratio_i   chars
+  ------------------------------------------
+      1       8       12    1.5000      64
+      2       7        9    1.2857      47
+      3      12       13    1.0833      60
+      4       7        8    1.1429      43
+      5       6        7    1.1667      34
+      6       8       11    1.3750      47
+      7       8       10    1.2500      39
+      8       6        9    1.5000      33
+      9       6        7    1.1667      26
+     10      11       13    1.1818      55
+
+  HIN:
+   line   words   tokens   ratio_i   chars
+  ------------------------------------------
+      1       7       47    6.7143      30
+      2       8       61    7.6250      38
+      3       7       47    6.7143      30
+      4       7       51    7.2857      32
+      5       5       34    6.8000      24
+      6       5       40    8.0000      24
+      7       7       59    8.4286      36
+      8       4       35    8.7500      22
+      9       6       40    6.6667      26
+     10       6       45    7.5000      28
+
+--- Aggregation comparison ---
+
+Metric                                mean-of-ratios   ratio-of-totals      delta   delta%
+------------------------------------------------------------------------------------------
+ENG fertility (tok/word)                    1.265206          1.253165  -0.012041  -0.952%
+HIN fertility (tok/word)                    7.448452          7.403226  -0.045227  -0.607%
+HIN/ENG ratio                               5.887148          5.907625   0.020477   0.348%
+ENG tok/char                                0.225636          0.220982  -0.004654  -2.063%
+HIN tok/char                                1.579108          1.582759   0.003650   0.231%
+
+--- Totals summary ---
+  ENG: tokens=99  words=79  chars=448
+  HIN: tokens=459  words=62  chars=290
+
+--- 2 d.p. display ---
+  mean-of-ratios:   ENG 1.27  HIN 7.45  ratio 5.89x
+  ratio-of-totals:  ENG 1.25  HIN 7.40  ratio 5.91x
+
+======================================================================
+END OF EXP_H2

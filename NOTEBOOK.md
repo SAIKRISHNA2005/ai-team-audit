@@ -163,3 +163,79 @@ Open questions carried to Phase 3:
 - Does a multilingual tokenizer shrink the gpt2 Hindi gap (H7, H8)?
 - Can tok/char ratio be recovered from fertility ratio × chars-per-word (H6)?
 
+# Phase 3 — Controlled bug experiments
+Date: 2026-09-04
+
+Question: For each hypothesis in the registry (H1–H5), does the isolated synthetic test confirm the mechanism, and does running it on the real corpora move the numbers?
+
+## What we did
+
+- Wrote five new scripts under `partA/scripts/exp_h1_whitespace.py` … `exp_h5_charcount.py`. `starterkit(1)/fertility.py` untouched.
+- Each script: (A) synthetic isolation with hand-crafted strings, (B) real-corpus impact on the actual 10-line `eng_sample.txt` / `hin_sample.txt`.
+- Captured all stdout to `artifacts/raw/phase3_h1_whitespace.txt` … `phase3_h5_charcount.txt`.
+- All five experiments completed exit 0. Python 3.10.5, tiktoken 0.14.0, `regex` 2026.7.19.
+- Updated `partA/experiments/02_hypothesis_registry.md` Confidence column from pre-experiment priors to post-experiment ratings.
+- Wrote full results into `partA/experiments/03_bug_experiments.md`.
+
+## Commands run
+
+```
+python partA/scripts/exp_h1_whitespace.py  > artifacts/raw/phase3_h1_whitespace.txt
+python partA/scripts/exp_h2_aggregation.py > artifacts/raw/phase3_h2_aggregation.txt
+python partA/scripts/exp_h3_lowercase.py   > artifacts/raw/phase3_h3_lowercase.txt
+python partA/scripts/exp_h4_nfc.py         > artifacts/raw/phase3_h4_nfc.txt
+python partA/scripts/exp_h5_charcount.py   > artifacts/raw/phase3_h5_charcount.txt
+```
+
+## Key results (with raw-output pointers)
+
+**H1 — split(" ") whitespace bug** (`phase3_h1_whitespace.txt`):
+- ENG line 7 and HIN line 10 each had 1 empty string from consecutive spaces.
+- Before/after fertility: ENG 1.27→1.28, HIN 7.45→7.60, ratio 5.89→5.92 at 2 d.p.
+- **Verdict: confirmed bug.** Both 2 d.p. table cells are wrong relative to standard word counting.
+
+**H2 — mean-of-ratios vs ratio-of-totals** (`phase3_h2_aggregation.txt`):
+- Synthetic: with a 1-word high-fertility line + 100-word line, mean-of-ratios=2.55 vs ratio-of-totals=1.13 (−55.7% gap).
+- Real corpus: ENG shifts −0.95%, HIN −0.61%, ratio +0.35% (2 d.p.: mean gives 1.27/7.45/5.89×, totals gives 1.25/7.40/5.91×).
+- **Verdict: aggregation bug.** Small but directionally real; direction of bias is language-dependent.
+
+**H3 — .lower() asymmetry** (`phase3_h3_lowercase.txt`):
+- "NASA" → [29998] (1 token) lowercased → [77, 15462] (2 tokens) — lowercasing _adds_ a token.
+- 3 English lines gained tokens under .lower(); 0 Hindi lines changed.
+- Corpus: ENG fertility −2.84% under .lower(), HIN 0.00%; ratio narrows from 6.06→5.89×.
+- **Verdict: confirmed bug / misleading.** The ".lower() removes noise" comment is backwards: lowercasing English underestimates the real-text hin/eng fertility gap.
+
+**H4 — NFC normalization** (`phase3_h4_nfc.txt`):
+- Both sample files: 0/10 lines changed under NFC. Metrics identical across NFC/NFD/none.
+- Synthetic: Latin NFD é (2 cp) → 3 GPT-2 tokens; NFC é (1 cp) → 1 token. Effect is real but absent from these specific files.
+- **Verdict: harmless-but-suspicious (this sample).** No-op on the given data; correct defensive programming for messier corpora.
+
+**H5 — char counting semantics** (`phase3_h5_charcount.txt`):
+- HIN cp/grapheme = 1.543; ENG cp/grapheme = 1.000.
+- tok/char ratio: 7.0× (code points, what the script uses) vs **10.86×** (grapheme clusters, visually correct) — 55% gap.
+- UTF-8 byte denominator gives 2.66× (opposite direction from grapheme).
+- **Verdict: conceptual metric problem.** `len()` counts code points including combining marks invisible as standalone characters. The REPORT says "per character" (implying glyphs); the code measures something different and smaller for Hindi, underreporting the true tok/glyph ratio by 55%.
+
+## Dead end: "NFC will inflate Hindi's code-point count and skew tok/char"
+
+**Expected:** NFC normalization on Devanagari text with combining characters would merge NFD sequences into fewer code points, changing `len(line)` and therefore the tok/char denominator.
+
+**Measured:** Zero lines in either corpus changed under NFC (0/10 ENG, 0/10 HIN). The Devanagari nukta case (`ड + ◌़` = U+0921 + U+093C) is already NFC-canonical — `unicodedata.is_normalized('NFC', text) = True` for all 20 lines. The metrics were numerically identical under NFC, NFD, and no-normalize.
+
+**Why it didn't matter:** The sample files were likely saved from a Python or modern text editor that produces NFC by default. The NFD-sensitivity effect _does_ exist (Latin NFD é → 3 tokens vs NFC é → 1 token, confirmed by the synthetic test), but is absent from these 20 lines. Had the Hindi been stored in NFD (as some corpora delivered from older scrapers), NFC would have changed both `len()` and tokenizer output. The hypothesis mechanism is real; it just doesn't trigger on this particular sample.
+
+This is worth recording because it looked like an obvious "Devanagari combining marks = NFC issue" but turned out to be the one clean case in the experiment set.
+
+## Interpretation
+
+- H1 and H3 are the highest-priority bugs: both change the 2 d.p. table cells and the hin/eng ratio in opposite directions (H1 depresses fertility, H3 depresses it for English only but more strongly than H1).
+- H5 is the largest _conceptual_ error: if you accept grapheme clusters as the right denominator for "characters," the reported 7× tok/char becomes 10.86× — a 55% under-report. This materially affects the "6× serving cost" narrative.
+- H2 is real but small on this balanced 10-line corpus; it would be larger on a corpus with heavy line-length variance.
+- H4 is a no-op on this data. Leave the NFC call in place — it's correct for other corpora.
+- Across H1+H3 combined (both fixed), the hin/eng ratio _increases_ from 5.89× (split(" ") + lower()) to ~6.06× (split() + no-lower; H3 effect) or 5.92× (split(); H1 only). The overall direction of the gap is not reversed by fixing H1–H3 alone, but the magnitude and which claims are defensible changes substantially.
+
+## Open questions carried to Phase 4
+
+- How much does the hin/eng gap change under an Indic-aware tokenizer (H7/H8)? Are H1–H3 artifacts responsible for overstating or understating the tokenizer-specific component?
+- Can H6 be quantified: does fertility_ratio × (HIN chars/word) / (ENG chars/word) recover the tok/char ratio? (Phase 3 H5 data shows chars/word: ENG = 448/79 = 5.67 cp/word, HIN = 290/62 = 4.68 cp/word; predicted tok/char ratio = 5.89 × 4.68/5.67 = 4.86 — does not match the reported 6.99×; needs investigation.)
+- Does H9 (worse/better label) warrant a cost model, or just a label change?

@@ -1,0 +1,63 @@
+﻿======================================================================
+PART A  Synthetic isolation: split(' ') vs split() empty-string counts
+======================================================================
+
+Case                                  split_sp  split()  empties
+-----------------------------------------------------------------
+ENG single space                             5        5        0
+ENG double space                             8        7        1
+ENG triple space                             7        3        4
+ENG leading space                            3        2        1
+ENG trailing space                           3        2        1
+ENG leading+trailing                         4        2        2
+ENG tab                                      1        2        0
+ENG newline embedded                         1        2        0
+HIN single space                             6        6        0
+HIN double space                             6        5        1
+HIN triple space                             7        3        4
+HIN leading space                            3        2        1
+HIN trailing space                           3        2        1
+HIN double space (dev)                       4        3        1
+
+--- Fertility distortion (mock: token_count = len(split()) words) ---
+
+Case                            fert_split_sp  fert_split()    delta   %change
+------------------------------------------------------------------------------
+single spaces only                     1.0000        1.0000   0.0000     0.00%
+one double space                       0.8750        1.0000   0.1250    14.29%
+two double spaces                      0.6667        1.0000   0.3333    50.00%
+leading + trailing                     0.6000        1.0000   0.4000    66.67%
+tab separated                          3.0000        1.0000  -2.0000   -66.67%
+HIN double space                       0.7500        1.0000   0.2500    33.33%
+
+======================================================================
+PART B  Real-corpus impact: split(' ') vs split() on sample corpora
+======================================================================
+
+  English corpus: 10 lines
+  Hindi corpus:   10 lines
+
+--- Per-line empty-string counts in split(' ') ---
+  [ENG line 7] empties=1  text='please keep the books  in the cupboard.'
+  [ENG] total empty strings across all lines: 1
+  [HIN line 10] empties=1  text='αñòαñ┐αññαñ╛αñ¼αÑçαñé  αñàαñ▓αñ«αñ╛αñ░αÑÇ αñ«αÑçαñé αñ░αñûαÑÇ αñ╣αÑêαñéαÑñ'
+  [HIN] total empty strings across all lines: 1
+
+--- Fertility comparison (original split(' ') vs split()) ---
+
+Metric                          BEFORE split(" ")  AFTER split()  Delta %
+-------------------------------------------------------------------------
+ENG fertility                            1.265206       1.283063   1.411%
+HIN fertility                            7.448452       7.598452   2.014%
+HIN/ENG ratio                            5.887148       5.922121   0.594%
+ENG tok/char                             0.225636       0.225636   0.000%
+HIN tok/char                             1.579108       1.579108   0.000%
+
+--- 2 d.p. display (as in REPORT_v0 / fertility.py output) ---
+  BEFORE: ENG 1.27  HIN 7.45  ratio 5.89x
+  AFTER:  ENG 1.28  HIN 7.60  ratio 5.92x
+  BEFORE ratio from displayed cells: 5.8661x
+  AFTER  ratio from displayed cells: 5.9375x
+
+======================================================================
+END OF EXP_H1
