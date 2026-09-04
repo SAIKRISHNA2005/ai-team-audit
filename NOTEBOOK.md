@@ -282,3 +282,34 @@ Question: Can we build a high-quality, 6-language parallel evaluation corpus cov
 - Formal Wikipedia/news domain (high-register, Sanskritised translations in Indic; unrepresentative of conversational or code-switching Hinglish).
 - No transcription speech or spoken sandhi contractions.
 - Sourced as translation *from* English, introducing translationese bias.
+
+# Phase 6 — Corrected Cross-Language Comparison (A3)
+Date: 2026-09-04
+
+Question: When recomputed with corpus-level aggregation across multiple denominators and an Indic-trained tokenizer (MuRIL), does the English-vs-Indic fertility disparity persist, and which single denominator should drive serving cost decisions?
+
+## What we did
+- Built `partA/scripts/corrected_analysis.py` comparing **GPT-2 BPE** (50,257 vocab, English-trained) vs **MuRIL WordPiece** (`google/muril-base-cased`, 197,285 vocab, trained on 17 Indic languages + English) across all 6 languages in the FLORES-200 devtest corpus (6,072 sentences total).
+- Evaluated 4 distinct structural denominators: whitespace words, Unicode grapheme clusters (`regex` `\X`), UTF-8 bytes, and parallel sentences.
+- Implemented **corpus-level aggregation** ($\frac{\sum \text{tokens}}{\sum \text{units}}$) as the primary baseline, supplemented with per-sentence distributional statistics (median p50, 90th percentile p90, min/max, standard deviation).
+- Saved structured results to `partA/results/corrected_metrics.csv`, `partA/results/per_sentence_metrics.csv`, and rendered report `partA/results/corrected_metrics.md`.
+- Authored `partA/results/denominator_recommendation.md` providing architectural recommendations for serving cost modeling and model routing.
+
+## Key results
+- **The "Hindi Fertility Penalty" is an Artifact of English-Centric Tokenization:**
+  - Under GPT-2, Hindi appears 6.33× worse than English on tok/word (7.82 vs 1.23) and 7.41× worse on tok/sentence (198.1 vs 26.7).
+  - Under MuRIL, the tok/word ranking **FLIPS**: Hindi uses **1.247 tokens/word** vs English **1.259 tokens/word** (0.99× of English).
+  - On parallel sentences (holding semantic payload constant), Hindi uses **31.6 tokens/sentence** vs English **27.3 tokens/sentence** — a mere **1.16×** overhead (an **84.0% reduction** in token count relative to GPT-2).
+- **Dravidian Tokenization Collapse Solved:**
+  - Under GPT-2, Dravidian languages suffer catastrophic byte-fallback fragmentation: Tamil (415.2 tok/sent, 25.05 tok/word), Malayalam (405.1 tok/sent, 27.46 tok/word), Kannada (363.1 tok/sent, 22.83 tok/word), Telugu (346.6 tok/sent, 20.71 tok/word).
+  - Under MuRIL, sentence token consumption plummets by **90.5% to 93.0%**:
+    - Tamil: **28.9 tok/sent** (1.06× English, -93.0% vs GPT-2)
+    - Kannada: **29.1 tok/sent** (1.07× English, -92.0% vs GPT-2)
+    - Malayalam: **32.3 tok/sent** (1.18× English, -92.0% vs GPT-2)
+    - Telugu: **32.8 tok/sent** (1.20× English, -90.5% vs GPT-2)
+- **Denominators & Agglutination Insight:**
+  - Dravidian languages exhibit higher `tok/word` under MuRIL (1.74–2.19 tok/word) solely due to agglutinative morphology (Malayalam sentences average only 9.5 words vs English 21.6 words). When normalized by semantic sentence, Dravidian token consumption is within 6%–20% of English.
+- **Surprises & Nuances:**
+  - **Byte-Density Inversion:** Under MuRIL, Indic languages are over 2× *more efficient per byte* than English (0.069–0.095 tok/byte vs 0.209 for English) because each Indic WordPiece subword compresses multiple 3-byte characters into a single token ID.
+  - **Telugu Minor Outlier:** Telugu has slightly higher token counts (32.8 tok/sent) than Tamil (28.9) and Kannada (29.1), reflecting slight subword sparsity in MuRIL's pretraining corpus.
+- **Serving Recommendation:** Models must be routed and priced based on **Tokens per Semantic Task/Sentence**, not `tok/word` or `tok/char`.
