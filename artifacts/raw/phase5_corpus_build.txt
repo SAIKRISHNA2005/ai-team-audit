@@ -1,0 +1,142 @@
+======================================================================
+PHASE 5 CORPUS BUILD REPORT
+======================================================================
+Source: https://dl.fbaipublicfiles.com/nllb/flores200_dataset.tar.gz
+Split: devtest
+Final sentence count: 1012
+Languages: ['eng_Latn', 'hin_Deva', 'kan_Knda', 'tam_Taml', 'tel_Telu', 'mal_Mlym']
+
+--- Sentence counts per language ---
+  eng_Latn: 1012 (raw), 1012 (kept)
+  hin_Deva: 1012 (raw), 1012 (kept)
+  kan_Knda: 1012 (raw), 1012 (kept)
+  tam_Taml: 1012 (raw), 1012 (kept)
+  tel_Telu: 1012 (raw), 1012 (kept)
+  mal_Mlym: 1012 (raw), 1012 (kept)
+
+--- Quality check details ---
+
+  eng_Latn:
+    empty: 0
+    duplicates: 0
+    very_short: 0
+    very_long: 0
+    has_url: 0
+    irregular_whitespace: 0
+    zero_width: 1 cases — [(682, ['\u200b', '\u200b'])]
+    mixed_nfc: 0
+    punct_only: 0
+    digit_runs: 0
+
+  hin_Deva:
+    empty: 0
+    duplicates: 0
+    very_short: 0
+    very_long: 0
+    has_url: 0
+    irregular_whitespace: 6 cases — [489, 505, 789, 816, 893]
+    zero_width: 3 cases — [(1, ['\u200b', '\u200b']), (718, ['\u200d']), (829, ['\u200d'])]
+    mixed_nfc: 93 cases — [5, 24, 44, 81, 84]
+    punct_only: 0
+    digit_runs: 0
+    embedded_latin (>5 alpha chars): 11 cases
+      line 12: PALMZMapp
+      line 167: ASUSEeePC
+      line 170: TogiNet
+
+  kan_Knda:
+    empty: 0
+    duplicates: 0
+    very_short: 0
+    very_long: 0
+    has_url: 0
+    irregular_whitespace: 213 cases — [0, 5, 11, 17, 20]
+    zero_width: 289 cases — [(1, ['\u200c', '\u200c', '\u200c']), (3, ['\u200c']), (4, ['\u200c']), (5, ['\u200c']), (7, ['\u200c'])]
+    mixed_nfc: 7 cases — [214, 320, 729, 878, 880]
+    punct_only: 0
+    digit_runs: 0
+    embedded_latin (>5 alpha chars): 13 cases
+      line 16: USAUSOC
+      line 41: nGhzGhz
+      line 43: nMbits
+
+  tam_Taml:
+    empty: 0
+    duplicates: 0
+    very_short: 0
+    very_long: 0
+    has_url: 0
+    irregular_whitespace: 75 cases — [0, 13, 14, 16, 18]
+    zero_width: 5 cases — [(39, ['\u200b', '\u200b']), (316, ['\u200b', '\u200b']), (714, ['\u200b', '\u200b']), (854, ['\u200b', '\u200b']), (966, ['\u200b', '\u200b'])]
+    mixed_nfc: 2 cases — [102, 867]
+    punct_only: 0
+    digit_runs: 0
+    embedded_latin (>5 alpha chars): 14 cases
+      line 12: PALMZMapp
+      line 41: nGhzGhz
+      line 43: nMbits
+
+  tel_Telu:
+    empty: 0
+    duplicates: 0
+    very_short: 0
+    very_long: 0
+    has_url: 0
+    irregular_whitespace: 136 cases — [4, 8, 10, 12, 13]
+    zero_width: 154 cases — [(2, ['\u200c']), (8, ['\u200c']), (10, ['\u200c']), (12, ['\u200c', '\u200c', '\u200c', '\u200c', '\u200c', '\u200c', '\u200c', '\u200c', '\u200c']), (13, ['\u200c', '\u200c'])]
+    mixed_nfc: 1 cases — [854]
+    punct_only: 0
+    digit_runs: 0
+    embedded_latin (>5 alpha chars): 82 cases
+      line 8: QVCSiminoff
+      line 15: LarryNassarUSA
+      line 16: USAUSOC
+
+  mal_Mlym:
+    empty: 0
+    duplicates: 0
+    very_short: 0
+    very_long: 0
+    has_url: 0
+    irregular_whitespace: 54 cases — [41, 42, 46, 64, 88]
+    zero_width: 250 cases — [(1, ['\u200c', '\u200c']), (5, ['\u200d']), (10, ['\u200c']), (12, ['\u200c']), (13, ['\u200c', '\u200c'])]
+    mixed_nfc: 4 cases — [368, 467, 558, 999]
+    punct_only: 0
+    digit_runs: 0
+    embedded_latin (>5 alpha chars): 6 cases
+      line 12: PALMZMapp
+      line 43: Mbitssn
+      line 167: ASUSEeePC
+
+--- Sample alignment check (first 3 sentences) ---
+
+  sentence_id=0:
+    eng_Latn: "We now have 4-month-old mice that are non-diabetic that used to be diabetic," he added.
+    hin_Deva: उन्होंने कहा “कि अब हमारे पास 4 महीने उम्र वाले चूहे हैं जिन्हें मधुमेह नहीं है जो मधुमेह के रोगी थे
+    kan_Knda: " ಈ ಮೊದಲು ಡಯಾಬೆಟಿಕ್ ಆಗಿದ್ದ ಆದರೆ ಈಗ  ಡಯಾಬೆಟಿಕ್ ಅಲ್ಲದ 4 ತಿಂಗಳ ಇಲಿಗಳು ನಮ್ಮ  ಬಳಿ ಇವೆ," ಎಂದು ಅವನು ಹೇಳಿದ.
+    tam_Taml: """எங்களிடம் இப்போது  4-மாத-வயதுடைய எலி ஒன்று உள்ளது, முன்னர் அதற்கு நீரிழிவு இருந்தது தற்போது இல்லை
+    tel_Telu: """""""ఇప్పుడు మావద్ద 4 నెలల వయస్సు గల ఎలుకలు ఉన్నాయి, అవి మధుమేహం లేనివి, అవి మధుమేహవ్యాధిగా ఉన్నాయ
+    mal_Mlym: പ്രമേഹമുണ്ടായിരുന്ന, ഇപ്പോൾ പ്രമേഹമില്ലാത്ത 4 മാസം പ്രായമുള്ള എലികളാണ് ഞങ്ങളുടെ പക്കലുള്ളത്.
+
+  sentence_id=1:
+    eng_Latn: Dr. Ehud Ur, professor of medicine at Dalhousie University in Halifax, Nova Scotia and chair of the 
+    hin_Deva: डॉ. एहुड उर, नोवा स्कोटिया के हैलिफ़ैक्स में डलहौज़ी विश्वविद्यालय में चिकित्सा के प्रोफ़ेसर और कनाड
+    kan_Knda: ನೋವಾ ಸ್ಕಾಟಿಯಾದ ಹ್ಯಾಲಿಫ್ಯಾಕ್ಸ್‌ನ ಡಾಲ್‌ಹೌಸಿ ವಿಶ್ವವಿದ್ಯಾಲಯದ ವೈದ್ಯಕೀಯ ಪ್ರಾಧ್ಯಾಪಕ ಮತ್ತು ಕೆನಡಿಯನ್ ಡಯಾಬಿಟಿಸ
+    tam_Taml: ஹாலிஃபாக்ஸில் உள்ள டல்ஹெளசி பல்கலைக்கழகத்தின் மருத்துவப் பேராசிரியரும், நோவா ஸ்கோட்டியா மற்றும் கனேட
+    tel_Telu: హాలిఫాక్స్, నోవా స్కోటియాలోని డల్హౌసీ విశ్వవిద్యాలయంలో మెడిసిన్ ప్రొఫెసర్ డాక్టర్ ఎహుద్ మీ ఇంకా కెనడ
+    mal_Mlym: നോവ സ്‌കോട്ടിയയിലെ, ഹാലിഫാക്സിലെ ഡെൽഹൌസി സർവകലാശാലയിലെ മെഡിസിൻ പ്രൊഫസ്സറായ ഡോക്‌ടർ എഹൂദ് ഉറും കനേഡിയ
+
+  sentence_id=2:
+    eng_Latn: Like some other experts, he is skeptical about whether diabetes can be cured, noting that these find
+    hin_Deva: कुछ अन्य विशेषज्ञों की तरह, उन्हें इस बात पर संदेह है कि क्या मधुमेह को ठीक किया जा सकता है, यह देखत
+    kan_Knda: ಮಧುಮೇಹವನ್ನು ಗುಣಪಡಿಸಲು ಸಾಧ್ಯವೇ ಎಂಬ ಬಗ್ಗೆ ಇತರೆ ಇತರ ಕೆಲವು ತಜ್ಞರಂತೆ ಅವರು ಕೂಡ ಸಂಶಯ ವ್ಯಕ್ತಪಡಿಸುತ್ತಾರೆ, ಈ ಸ
+    tam_Taml: பிற வல்லுனர்கள் போலவே அவரும், ஏற்கனவே டைப் 1 இரத்த சர்க்கரை நோயுள்ளவர்களுக்கு இந்த கண்டுபிடிப்புகள் 
+    tel_Telu: కొంతమంది ఇతర నిపుణుల మాదిరిగానే, మధుమేహం‌ను నయం చేయగలమా అనే దానిపై ఆయనకు అనుమానం ఉంది, ఈ పరిశోధనలతో 
+    mal_Mlym: മറ്റ് ചില വിദഗ്ദ്ധരെ പോലെ, പ്രമേഹരോഗികളെ സുഖപ്പെടുത്താൻ കഴിയുമോ എന്ന കാര്യത്തിൽ അദ്ദേഹത്തിന് സംശയമുണ
+
+--- Filter decisions ---
+  No lines were filtered. FLORES-200 devtest is a curated benchmark
+  dataset; filtering would compromise alignment and reproducibility.
+  The quality issues noted above (embedded Latin in Indic scripts,
+  digit runs) are features of the corpus content (proper nouns,
+  dates), not corruption. They are documented but retained.

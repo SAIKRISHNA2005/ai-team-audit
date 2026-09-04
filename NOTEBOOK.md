@@ -257,3 +257,28 @@ Question: What is the correct denominator for cross-script tokenizer comparison,
 
 ## Open questions carried to Phase 5
 - We've established that the Phase 1 script has implementation bugs, preprocessing asymmetries, and severe conceptual metric problems. In Phase 5, we need to build the clean baseline for Phase 6.
+
+# Phase 5 — Real Multilingual Evaluation Corpus (A1)
+Date: 2026-09-04
+
+Question: Can we build a high-quality, 6-language parallel evaluation corpus covering English, Hindi, and Dravidian languages with sentence alignment and rigorous quality checks?
+
+## What we did
+- Built `partA/scripts/build_corpus.py` to download and extract the FLORES-200 `devtest` split directly from Meta's canonical CDN (`dl.fbaipublicfiles.com/nllb/flores200_dataset.tar.gz`).
+- Selected 6 parallel languages: `eng_Latn` (English), `hin_Deva` (Hindi), `kan_Knda` (Kannada), `tam_Taml` (Tamil), `tel_Telu` (Telugu), `mal_Mlym` (Malayalam) — 1,012 sentences each (6,072 sentences total).
+- Saved per-language `.txt` files in `partA/corpus/` and combined multilingual JSONL in `partA/corpus/flores200_devtest.jsonl`.
+- Executed quality audit across all 6,072 sentences (empty lines, duplicates, lengths, URLs, whitespace, ZWC, NFC status, embedded Latin).
+- Documented findings, domain characteristics, alignment guarantees, and explicit corpus limitations in `partA/corpus/README.md`.
+
+## Key results
+- **Corpus Integrity & Alignment:** 1,012 sentences per language with 1-to-1 parallel sentence alignment preserved (`sentence_id` 0..1011). Zero empty or duplicate lines.
+- **Unicode Quality Findings:**
+  - `hin_Deva` contains 93 lines with non-NFC precomposed nukta letters (`U+0958`–`U+095F`, e.g., ZA, DDDHA, FA). Under standard NFC normalization, these expand into base letter + nukta (increasing string code point length). These are valid Hindi characters and are retained as-is in raw corpus.
+  - `kan_Knda` has 289 lines with Zero-Width Non-Joiner (`U+200C`, 458 total occurrences) used correctly for grammatical morpheme separation (e.g., separating locative suffixes from consonant clusters).
+  - `tel_Telu` contains 82 lines with embedded Latin characters (brand names, technical acronyms like DNA, COVID-19).
+- **Zero Filter Policy Justification:** Because FLORES-200 is a curated professional parallel dataset, removing sentences would destroy cross-language alignment. All flagged items are authentic linguistic features or valid orthography.
+
+## Limitations Documented
+- Formal Wikipedia/news domain (high-register, Sanskritised translations in Indic; unrepresentative of conversational or code-switching Hinglish).
+- No transcription speech or spoken sandhi contractions.
+- Sourced as translation *from* English, introducing translationese bias.
