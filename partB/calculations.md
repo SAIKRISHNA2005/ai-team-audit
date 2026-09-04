@@ -144,3 +144,31 @@ batch_size,prompt_len,gen_len,num_requests,wall_clock_s,reported_tok_s,ttft_ms_p
 - **Prediction Accuracy:** **EXACT MATCH.**
 - The analytical formula $N_{\text{max}} = 25$ predicted the exact transition point where preemption begins (`batch_size=24` has 0 preemptions; `batch_size=32` has exactly $32 - 25 = 7$ preemptions; `batch_size=48` has exactly $48 - 25 = 23$ preemptions).
 - The predicted KV cache utilization at batch size 24 ($\frac{24}{25.72} = 0.933$) matches the logged `0.93` to two decimal places.
+
+---
+
+## 7. Throughput Column Semantics: `reported_tok_s` vs True Generation `goodput_tok_s`
+
+### What Does `reported_tok_s` Count?
+An audit of `starterkit(1)/starter_kit/bench/bench_log.csv` against `model_spec.md` reveals that the harness's built-in `reported_tok_s` metric computes:
+$$\text{reported\_tok\_s} = \frac{\text{Total Tokens Processed (Prompt Prefill + Generated Decode)}}{\text{Wall Clock Seconds}}$$
+$$\text{reported\_tok\_s} = \frac{\text{num\_requests} \times (\text{prompt\_len} + \text{gen\_len})}{\text{wall\_clock\_s}}$$
+
+### Proof from Benchmark Data:
+1. **At `prompt_len=512, gen_len=256` (Batch 1):**
+   - Total Tokens = $1 \times (512 + 256) = 768\text{ tokens}$
+   - Wall Clock = $10.94\text{ s}$
+   - $\frac{768}{10.94} = \mathbf{70.201\text{ tok/s}}$ $\rightarrow$ Logged `reported_tok_s`: **`70.2`** (Exact match).
+2. **At `prompt_len=3584, gen_len=512` (Batch 24):**
+   - Total Tokens = $24 \times (3584 + 512) = 24 \times 4096 = 98,304\text{ tokens}$
+   - Wall Clock = $61.16\text{ s}$
+   - $\frac{98,304}{61.16} = \mathbf{1607.325\text{ tok/s}}$ $\rightarrow$ Logged `reported_tok_s`: **`1607.4`** (Exact match).
+
+### Why This Distorts Serving Capacity Analysis (Goodput Inflation)
+- **Prefill vs Decode Asymmetry:** In LLM serving, prompt prefill is computed in parallel across thousands of tokens at high arithmetic intensity (compute-bound, achieving high FLOPS), whereas token generation (decode) runs sequentially token-by-token (memory-bandwidth-bound, achieving low token/s per stream).
+- **Goodput Formula:** The client-visible generation rate (the speed at which usable output is delivered) is:
+  $$\text{goodput\_tok\_s} = \frac{\text{num\_requests} \times \text{gen\_len}}{\text{wall\_clock\_s}}$$
+- **Divergence by Prompt Length:**
+  - **At `prompt_len=512, gen_len=256`:** Prompt tokens are $66.7\%$ of the total. `reported_tok_s` is exactly **$3.00\times$ higher** than goodput ($\frac{768}{256} = 3.0$). At batch 64, reported is $2,267.3\text{ tok/s}$ vs goodput of $755.7\text{ tok/s}$.
+  - **At `prompt_len=3584, gen_len=512`:** Prompt tokens are $87.5\%$ of the total. `reported_tok_s` is exactly **$8.00\times$ higher** than goodput ($\frac{4096}{512} = 8.0$). At batch 24, reported is $1,607.4\text{ tok/s}$ vs goodput of only $200.9\text{ tok/s}$.
+- **Root Cause of `REPORT_v0` Section 2 Error:** The author of `REPORT_v0` treated `reported_tok_s` as generation throughput, concluding that long-context throughput was comparable to short-context throughput ($1607.4$ vs $2267.3$), failing to recognize that $87.5\%$ of the long-context "throughput" was just prompt prefill, while actual generation rate plummeted from $755.7$ to $200.9\text{ tok/s}$ (a $73.4\%$ generation throughput collapse).

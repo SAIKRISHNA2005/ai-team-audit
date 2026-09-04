@@ -354,3 +354,26 @@ Question: What is the exact theoretical KV cache memory footprint and maximum 40
   - `batch_size = 32`: Predicted preemptions $= 32 - 25 = \mathbf{7}$; Actual logged `preempted_seqs = 7`, `kv_cache_util = 0.97` (saturation), throughput drops from 1607.4 to 1384.0 tok/s.
   - `batch_size = 48`: Predicted preemptions $= 48 - 25 = \mathbf{23}$; Actual logged `preempted_seqs = 23`, `kv_cache_util = 0.97`, throughput drops to 1298.5 tok/s.
 - **Outcome:** The analytical derivation predicted the exact integer preemption counts and saturation knee with 100% precision.
+
+# Phase 9 — Bench Log Column Semantics & Goodput Audit (B2 Ground Truth)
+Date: 2026-09-04
+
+Question: What are the exact token counting semantics of `reported_tok_s` in `bench_log.csv`, and how does reported throughput diverge from true client-visible generation goodput across prompt lengths?
+
+## What we did
+- Wrote `partB/scripts/load_bench_log.py` to ingest `bench_log.csv`, outputting full schema and raw rows to `artifacts/raw/phase9_bench_log_dump.txt`.
+- Derived new ground-truth metrics saved to `partB/results/bench_log_derived.csv`:
+  - `expected_generated_tokens = num_requests * gen_len`
+  - `total_tokens_processed = num_requests * (prompt_len + gen_len)`
+  - `goodput_tok_s = expected_generated_tokens / wall_clock_s`
+  - `total_throughput_tok_s = total_tokens_processed / wall_clock_s`
+  - `reported_vs_goodput_ratio` and `divergence_pct`.
+- Audited token semantics in `partB/calculations.md` Section 7, proving `reported_tok_s = total_tokens / wall_clock_s`.
+- Generated full comparative analysis in `partB/results/reported_vs_goodput.md`.
+
+## Key results
+- **The Prefill Counting Confound Uncovered:**
+  - `reported_tok_s` counts **ALL tokens (prompt + generated)** divided by wall-clock time.
+  - At `prompt_len=512, gen_len=256`: Prompt is $66.7\%$ of workload; `reported_tok_s` is exactly **$3.00\times$ higher** than generation goodput (e.g. at batch 64: reported = $2,267.3\text{ tok/s}$, goodput = $755.7\text{ tok/s}$).
+  - At `prompt_len=3584, gen_len=512`: Prompt is $87.5\%$ of workload; `reported_tok_s` is exactly **$8.00\times$ higher** than generation goodput (e.g. at batch 24: reported = $1,607.4\text{ tok/s}$, goodput = $200.9\text{ tok/s}$).
+- **Core Finding for Section 2 Audit:** `REPORT_v0` conflated total throughput with generation rate, masking a $73.4\%$ generation throughput collapse ($755.7 \rightarrow 200.9\text{ tok/s}$) behind high prefill token counts.
