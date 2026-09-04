@@ -132,3 +132,34 @@ Open questions carried to Phase 2:
 - What is the exact definition of `reported_tok_s`, `batch_size`, `wall_clock_s`, and `kv_cache_util`?
 - Why does REPORT_v0’s ~3200 tok/s at batch 48 disagree with the existing CSV row 1298.5? (question only; no verdict this phase)
 
+# Phase 2 — Hypothesis registry (no verdicts yet)
+Date: 2026-09-04
+
+Question: Which falsifiable hypotheses about `fertility.py` and REPORT_v0’s methodology should Phase 3/4 actually test — without treating suspicion as confirmation?
+
+What we did:
+- Read Phase 1 inventory (`00_script_inventory.md`, `01_claims_table.md`) and the cited lines in `fertility.py` / `REPORT_v0.md` / sample corpora.
+- Wrote `partA/experiments/02_hypothesis_registry.md` (H1–H10). Required paths all have a row: `split(" ")`, mean-of-ratios vs totals, `.lower()`, NFC, `len(line)`, tok/char “confirms” tok/word, script-vs-tokenizer causal claim, gpt2-only.
+- Type labels are hypothesized classes (implementation / aggregation / preprocessing / conceptual / suspicious-but-maybe-fine), not verdicts.
+- Did not run ablations, did not edit `starterkit(1)/`, did not mark any hypothesis confirmed.
+
+Command(s) run:
+- None this phase (no new measurements). Observations reused: Phase 1 baseline (`artifacts/raw/phase1_baseline_run.txt`); visual read of eng L7 and hin L10 double spaces.
+
+Result (raw, or pointer to artifacts/raw/... file):
+- Registry: `partA/experiments/02_hypothesis_registry.md`
+- Phase 1 numbers unchanged: eng 1.27 / 0.226, hin 7.45 / 1.579, printed ratio 5.89×; 7.45/1.27 = 5.866…; 1.579/0.226 = 6.986…
+
+Interpretation:
+- High suspicion is not evidence. H1 (space split) and H6–H8 (metric independence / causal design / gpt2-only) are the highest-priority tests, still untested.
+- H4 (NFC) and H10 (5.89 vs 7.45/1.27 rounding) are the rows most likely to end “suspicious but harmless” **if** experiments show a no-op or pure display effect — that is a prediction, not a result.
+- Serving-cost and Part B bench questions stay out of this registry’s verdicts.
+- Verification (same day): H8 wording was tightened so it is a measurable gpt2 vs `hf:` ratio contrast (threshold 0.01), not “tokenizer might be bad.”
+
+Open questions carried to Phase 3:
+- Does `split(" ")` vs `split()` move eng/hin fertility enough to matter at two decimal places?
+- How large is mean-of-ratios vs total-tokens/total-words (H2)?
+- Does dropping `.lower()` or NFC change the gap (H3, H4)?
+- Does a multilingual tokenizer shrink the gpt2 Hindi gap (H7, H8)?
+- Can tok/char ratio be recovered from fertility ratio × chars-per-word (H6)?
+
